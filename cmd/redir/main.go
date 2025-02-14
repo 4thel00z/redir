@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -28,31 +30,48 @@ const (
 
 func main() {
 	// CLI flags
-	urlFlag := flag.String("url", "", "The URL to follow redirections for")
+	urlFlag := flag.String("url", "", "The URL to follow redirections for. If empty, URIs will be read from STDIN (one per line, extra text allowed).")
 	outputFlag := flag.String("output", "table", "Output format: json or table")
 	maxRedirs := flag.Int("max", 10, "Maximum number of redirections to follow")
 	flag.Parse()
 
-	if *urlFlag == "" {
-		fmt.Println(red + "Error: -url flag is required" + reset)
-		flag.Usage()
-		os.Exit(1)
+	// If -url flag is provided, process that URI.
+	if *urlFlag != "" {
+		processURI(*urlFlag, *maxRedirs, *outputFlag)
+		return
 	}
 
-	// Execute the redirection follow.
-	steps, err := redir.FollowRedirects(*urlFlag, *maxRedirs)
+	// Otherwise, read from STDIN.
+	scanner := bufio.NewScanner(os.Stdin)
+	// Regex to match URIs (basic http/https pattern).
+	re := regexp.MustCompile(`https?://[^\s]+`)
+	for scanner.Scan() {
+		line := scanner.Text()
+		uri := re.FindString(line)
+		if uri == "" {
+			continue // Skip lines with no URI.
+		}
+		processURI(uri, *maxRedirs, *outputFlag)
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, red+"Error reading from STDIN:"+reset, err)
+		os.Exit(1)
+	}
+}
+
+func processURI(uri string, maxRedirs int, outputFormat string) {
+	steps, err := redir.FollowRedirects(uri, maxRedirs)
 	if err != nil {
-		fmt.Println(red+"Error:"+reset, err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "%sError processing %s: %v%s\n", red, uri, err, reset)
+		return
 	}
 
-	// Output according to requested format.
-	switch *outputFlag {
+	switch outputFormat {
 	case "json":
 		outJSON, err := json.MarshalIndent(steps, "", "  ")
 		if err != nil {
-			fmt.Println(red+"JSON Marshalling Error:"+reset, err)
-			os.Exit(1)
+			fmt.Fprintf(os.Stderr, "%sJSON Marshalling Error for %s: %v%s\n", red, uri, err, reset)
+			return
 		}
 		fmt.Println(string(outJSON))
 	case "table":

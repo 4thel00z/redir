@@ -35,6 +35,20 @@ Limit the number of redirections with the -max flag:
 redir -url="https://example.com" -max=5
 ```
 
+## STDIN Mode
+
+If the -url flag is omitted, redir will read from STDIN. Each line is scanned for a URI (even if mixed with other text). For example:
+
+```bash
+echo "Visit https://example.com for more info" | redir
+```
+
+Or reading from a file:
+
+```bash
+cat urls.txt | redir -output=json
+```
+
 ## Usage as a Library
 
 You can also import the redir package into your Go projects to follow HTTP redirections programmatically. Here's a quick example:
