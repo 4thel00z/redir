@@ -3,7 +3,7 @@
 all: build
 
 build:
-	go build -o redir cmd/redir/main.go redir.go
+	go build -o bin/redir cmd/redir/main.go
 
 install:
 	go install github.com/4thel00z/redir@latest

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"redir"
+	"github.com/4thel00z/redir"
 )
 
 // ANSI escape codes for colors.
@@ -84,5 +84,5 @@ func printTable(steps []redir.Redirection) {
 			step.StatusCode,
 			statusColor, ms, reset)
 	}
-	fmt.Printf("\n%sFinished at %s%s\n", rocketEmoji, time.Now().Format(time.RFC1123), reset)
+	fmt.Printf("\n%s Finished at %s%s\n", rocketEmoji, time.Now().Format(time.RFC1123), reset)
 }
