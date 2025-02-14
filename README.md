@@ -2,10 +2,6 @@
 
 A simple Go library and CLI tool to follow HTTP redirections and output detailed information such as URL, HTTP status code, and request duration. The CLI supports JSON and a pretty-printed table output (with colors and emojis).
 
-## Repository
-
-[github.com/4thel00z/redir](https://github.com/4thel00z/redir)
-
 ## Installation
 
 Install the CLI tool using Go:
